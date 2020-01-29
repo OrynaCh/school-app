@@ -1,0 +1,204 @@
+const Lesson = require('../models/models');
+const deleteLesson = require("../db/db-methods");
+const saveLesson = require("../db/db-methods");
+const mongoose = require("mongoose");
+
+exports.lesson_create = async function(req, res) {
+    try {
+        const newLesson = new Lesson(req.body);
+        await saveLesson(newLesson);
+        res.status(200).send(JSON.stringify({
+            success: true
+        }));
+    } catch (err) {
+        console.log("error happened when trying to save new lesson " + JSON.stringify(err));
+        res.status(500).send(JSON.stringify({
+            error: "error happened when trying to save new lesson",
+        }));
+    }
+};
+
+exports.lesson_delete = async function(req, res) {
+    const id = req.params.id;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        try {
+            const result = await deleteLesson(id);
+            if (result) {
+                res.status(200).send(JSON.stringify({
+                    success: true
+                }));
+                console.log({
+                    "success": true,
+                    data: result
+                });
+            } else {
+                res.status(400).send(JSON.stringify({
+                    success: false,
+                    message: "no such id exists"
+                }))
+                console.log({
+                    "success": false,
+                    data: "no such id exists"
+                });
+            }
+        } catch (err) {
+            console.log("error happened when trying to delete the lesson " + JSON.stringify(err));
+            res.status(500).send(JSON.stringify({
+                error: "error happened when trying to delete the lesson"
+            }));
+        }
+    } else {
+        res.status(404).send(JSON.stringify({
+            message: "please provide correct Id"
+        }));
+        console.log({
+            "success": false,
+            message: "please provide correct Id"
+        });
+    }
+}
+
+exports.lesson_edit = async function(req, res) {
+    const id = req.params.id;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        try {
+            const result = await Lesson.findOneAndUpdate({
+                _id: id
+            }, {
+                $set: req.body
+            }, {
+                new: true
+            });
+            if (result) {
+                res.status(200).send(JSON.stringify({
+                    success: true
+                }))
+            } else {
+                res.status(404).send(JSON.stringify({
+                    success: false,
+                    message: "no such id exists"
+                }));
+            }
+        } catch (err) {
+            console.log("error happened when trying to edit the lesson " + JSON.stringify(err));
+            res.status(500).send(JSON.stringify({
+                error: "error happened when trying to edit the lesson"
+            }));
+        }
+    } else {
+        res.status(404).send(JSON.stringify({
+            message: "please provide correct Id"
+        }));
+        console.log({
+            "success": false,
+            message: "please provide correct Id"
+        });
+    }
+}
+
+exports.lesson_read = async function(req, res) {
+    const id = req.params.id;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        try {
+            const result = await Lesson.findOne({
+                _id: id
+            });
+            if (result) {
+                console.log(result)
+                res.status(200).send(JSON.stringify({
+                    "success": true
+                }))
+            } else {
+                res.status(404).send(JSON.stringify({
+                    "success": false,
+                    message: "no such id exists"
+                }));
+            }
+        } catch (err) {
+            console.log("error happened when trying to get data from database" + JSON.stringify(err));
+            res.status(500).send(JSON.stringify({
+                error: "error happened when trying to get data from database "
+            }));
+        }
+    } else {
+        res.status(404).send(JSON.stringify({
+            message: "please provide correct Id"
+        }));
+        console.log({
+            "success": false,
+            message: "please provide correct Id"
+        });
+    }
+}
+
+exports.lesson_listAll = async function(req, res) {
+    try {
+        const result = await Lesson.find({});
+        if (result) {
+            console.log(result)
+            res.status(200).send(JSON.stringify(result))
+        } else {
+            res.status(404).send(JSON.stringify({
+                success: false,
+                message: "no items found"
+            }));
+        }
+    } catch (err) {
+        console.log("error happened when trying to get data from database" + JSON.stringify(err));
+        res.status(500).send(JSON.stringify({
+            error: "error happened when trying to get data from database "
+        }));
+    }
+}
+
+exports.lesson_deleteAll = async function(req, res) {
+    try {
+        const result = await Lesson.deleteMany({
+            end_time: req.body.end_time
+        });
+        if (result.n === 0) {
+            res.status(404).send(JSON.stringify({
+                success: false,
+                message: "no items found"
+            }));
+        } else {
+            console.log(result)
+            res.status(200).send(JSON.stringify({
+                "success": true
+            }));
+        }
+    } catch (err) {
+        console.log("error happened when trying to delete lessons " + JSON.stringify(err));
+        res.status(500).send(JSON.stringify({
+            error: "error happened when trying to delete lessons",
+        }));
+    }
+};
+
+exports.lesson_bulkUpdate = async function(req, res) {
+    try {
+        const result = await Lesson.updateMany({
+            room_number: req.body.room_number_old
+        }, {
+            $set: {
+                room_number: req.body.room_number_new
+            }
+        });
+        console.log(result);
+        if (result.n === 0) {
+            res.status(404).send(JSON.stringify({
+                success: false,
+                message: "no items found"
+            }));
+        } else {
+            res.status(200).send(JSON.stringify({
+                success: true
+            }))
+        }
+    } catch (err) {
+        console.log("error happened when trying to edit lessons" + JSON.stringify(err));
+        res.status(500).send(JSON.stringify({
+            error: "error happened when trying to edit lessons"
+        }))
+    }
+}
