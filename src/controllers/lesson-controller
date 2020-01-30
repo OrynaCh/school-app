@@ -1,13 +1,11 @@
-const Lesson = require('../models/models');
-const deleteLesson = require("../db/db-methods");
-const saveLesson = require("../db/db-methods");
+const dbMethods = require("../db/db-methods");
 const mongoose = require("mongoose");
+mongoose.set('useFindAndModify', false);
 
 exports.lesson_create = async function(req, res) {
     try {
-        const newLesson = new Lesson(req.body);
-        await saveLesson(newLesson);
-        res.status(200).send(JSON.stringify({
+        dbMethods.saveLesson(req.body);
+        res.status(201).send(JSON.stringify({
             success: true
         }));
     } catch (err) {
@@ -22,15 +20,11 @@ exports.lesson_delete = async function(req, res) {
     const id = req.params.id;
     if (mongoose.Types.ObjectId.isValid(id)) {
         try {
-            const result = await deleteLesson(id);
+            const result = await dbMethods.deleteLesson(id);
             if (result) {
                 res.status(200).send(JSON.stringify({
                     success: true
                 }));
-                console.log({
-                    "success": true,
-                    data: result
-                });
             } else {
                 res.status(400).send(JSON.stringify({
                     success: false,
@@ -38,7 +32,7 @@ exports.lesson_delete = async function(req, res) {
                 }))
                 console.log({
                     "success": false,
-                    data: "no such id exists"
+                    "message": "no such id exists"
                 });
             }
         } catch (err) {
@@ -62,13 +56,7 @@ exports.lesson_edit = async function(req, res) {
     const id = req.params.id;
     if (mongoose.Types.ObjectId.isValid(id)) {
         try {
-            const result = await Lesson.findOneAndUpdate({
-                _id: id
-            }, {
-                $set: req.body
-            }, {
-                new: true
-            });
+            const result = await dbMethods.editLesson(id, req.body);
             if (result) {
                 res.status(200).send(JSON.stringify({
                     success: true
@@ -78,6 +66,10 @@ exports.lesson_edit = async function(req, res) {
                     success: false,
                     message: "no such id exists"
                 }));
+                console.log({
+                    "success": false,
+                    "message": "no such id exists"
+                });
             }
         } catch (err) {
             console.log("error happened when trying to edit the lesson " + JSON.stringify(err));
@@ -100,14 +92,9 @@ exports.lesson_read = async function(req, res) {
     const id = req.params.id;
     if (mongoose.Types.ObjectId.isValid(id)) {
         try {
-            const result = await Lesson.findOne({
-                _id: id
-            });
+            const result = await dbMethods.readLesson(id);
             if (result) {
-                console.log(result)
-                res.status(200).send(JSON.stringify({
-                    "success": true
-                }))
+                res.status(200).send(JSON.stringify(result));
             } else {
                 res.status(404).send(JSON.stringify({
                     "success": false,
@@ -117,7 +104,7 @@ exports.lesson_read = async function(req, res) {
         } catch (err) {
             console.log("error happened when trying to get data from database" + JSON.stringify(err));
             res.status(500).send(JSON.stringify({
-                error: "error happened when trying to get data from database "
+                error: "error happened when trying to get data from database"
             }));
         }
     } else {
@@ -133,9 +120,8 @@ exports.lesson_read = async function(req, res) {
 
 exports.lesson_listAll = async function(req, res) {
     try {
-        const result = await Lesson.find({});
+        const result = await dbMethods.listLessons();
         if (result) {
-            console.log(result)
             res.status(200).send(JSON.stringify(result))
         } else {
             res.status(404).send(JSON.stringify({
@@ -146,23 +132,20 @@ exports.lesson_listAll = async function(req, res) {
     } catch (err) {
         console.log("error happened when trying to get data from database" + JSON.stringify(err));
         res.status(500).send(JSON.stringify({
-            error: "error happened when trying to get data from database "
+            error: "error happened when trying to get data from database"
         }));
     }
 }
 
 exports.lesson_deleteAll = async function(req, res) {
     try {
-        const result = await Lesson.deleteMany({
-            end_time: req.body.end_time
-        });
+        const result = await dbMethods.deleteManyLessons(req.body);
         if (result.n === 0) {
             res.status(404).send(JSON.stringify({
                 success: false,
                 message: "no items found"
             }));
         } else {
-            console.log(result)
             res.status(200).send(JSON.stringify({
                 "success": true
             }));
@@ -177,14 +160,7 @@ exports.lesson_deleteAll = async function(req, res) {
 
 exports.lesson_bulkUpdate = async function(req, res) {
     try {
-        const result = await Lesson.updateMany({
-            room_number: req.body.room_number_old
-        }, {
-            $set: {
-                room_number: req.body.room_number_new
-            }
-        });
-        console.log(result);
+        const result = await dbMethods.editManyLessons(req.body);
         if (result.n === 0) {
             res.status(404).send(JSON.stringify({
                 success: false,
