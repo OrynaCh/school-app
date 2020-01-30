@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
+require("./Teachers");
 const Schema = mongoose.Schema;
 const lessonSchema = new Schema({
-        teacher_id: {
-            type: String,
+        teacher: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "theTeacher",
         },
         class_id: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
         },
         subject_id: {
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        lesson_topic: {
             type: String,
         },
         room_number: {
@@ -23,7 +28,5 @@ const lessonSchema = new Schema({
             type: String,
         },
     }
-
 );
-
-module.exports = mongoose.model("theLesson", lessonSchema)
+module.exports = mongoose.model("theLesson", lessonSchema);

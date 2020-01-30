@@ -1,5 +1,6 @@
-const Lesson = require("../models/models");
-
+require("../models/Teachers");
+const Lesson = require("../models/Lessons");
+const User = require("../models/Users");
 const saveLesson = reqBody => {
     const newLesson = new Lesson(reqBody);
     return newLesson.save();
@@ -9,13 +10,13 @@ const deleteLesson = id => {
     return Lesson.findOneAndDelete({
         _id: id
     });
-};
-
+}
 const readLesson = id => {
     return Lesson.findOne({
         _id: id
-    });
+    }).populate('teacher');
 }
+
 const editLesson = (id, reqBody) => {
     return Lesson.findOneAndUpdate({
         _id: id
@@ -38,14 +39,17 @@ const editManyLessons = reqBody => {
         }
     });
 }
-//in order not to delete all documents, as a example
-// we can delete documents which satisfy a certain query,
+//in order not to delete all documents, as a example we can delete documents which satisfy a certain query,
 // e.g. no lessons will take place in certain room
 const deleteManyLessons = reqBody => {
     return Lesson.deleteMany({
         room_number: reqBody.room_number
     });
 }
+
+const findUser = reqBody => {
+    return User.findOne({ login: reqBody.login, password: reqBody.password })
+    }
 
 module.exports = {
     saveLesson,
@@ -54,5 +58,6 @@ module.exports = {
     deleteManyLessons,
     listLessons,
     editManyLessons,
-    editLesson
+    editLesson,
+    findUser
 }
