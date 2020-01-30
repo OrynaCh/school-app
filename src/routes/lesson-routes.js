@@ -1,0 +1,12 @@
+const express = require('express');
+const router = express.Router();
+const lesson_controller = require('../controllers/lesson-controller');
+const auth = require('../middlewares/auth');
+router.get("/lessons", auth, lesson_controller.lesson_listAll);
+router.post("/lessons",  auth, lesson_controller.lesson_create);
+router.get("/lessons/:id",  auth, lesson_controller.lesson_read);
+router.put("/lessons/:id",  auth, lesson_controller.lesson_edit);
+router.put("/lessons",  auth, lesson_controller.lesson_bulkUpdate);
+router.delete("/lessons",  auth, lesson_controller.lesson_deleteAll);
+router.delete("/lessons/:id",  auth, lesson_controller.lesson_delete);
+module.exports = router;

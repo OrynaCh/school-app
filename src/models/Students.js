@@ -11,7 +11,6 @@ const studentSchema = new Schema({
     },
     class_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "theClass"
     },
     contact: {
         type: String,
